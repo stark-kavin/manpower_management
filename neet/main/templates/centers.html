@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEET - Centers Management</title>
+    <link rel="stylesheet" href="{% static 'home/home.css' %}">
+    <link rel="stylesheet" href="{% static 'centers/centers.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="{% url 'home' %}">NEET</a>
+        </div>
+        <div class="mobile-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="navbar-menu">
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'centers' %}" class="active">Centers</a></li>
+                <li><a href="{% url 'operators' %}">Operators</a></li>
+            </ul>
+        </div>
+        <div class="navbar-user">
+            <a href="#"><i class="fas fa-user"></i></a>
+        </div>
+    </nav>
+
+    <main>
+        <section class="centers-section">
+            <div class="container">
+                <div class="section-header">
+                    <h1 class="centers-title">Centers</h1>
+                    <p class="section-subtitle">Manage all centers in one place</p>
+                </div>
+                
+                <div class="centers-controls">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="centerSearch" placeholder="Search centers...">
+                    </div>
+                    <div class="filter-sort">
+                        <select id="centerSort">
+                            <option value="name">Sort by Name</option>
+                            <option value="count">Sort by Total Count</option>
+                            <option value="operator">Sort by Present Count</option>
+                        </select>
+                    </div>
+                </div>
+                
+                {% if centers %}
+                <div class="centers-list">
+                    {% for center_data in centers_data %}
+                    <a href="{% url 'center_detail' center_data.center.id %}" class="center-card" {% if center_data.center.count <= center_data.operator_count %} data-finished="true" {% endif %} data-name="{{ center_data.center.name|lower }}" data-count="{{ center_data.center.count }}" data-operator="{{ center_data.operator_count }}">
+                        <div class="center-card-header">
+                            <h3 class="center-title">{{ center_data.center.name }}</h3>
+                            <div class="center-status">
+                                {% if center_data.center.count <= center_data.operator_count %}
+                                <i class="fas fa-check-circle"></i> Full
+                                {% else %}
+                                <i class="fas fa-user-plus"></i> Available
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Capacity Progress Bar -->
+                        <div class="capacity-bar">
+                            <div class="capacity-bar-fill {% if center_data.capacity_percentage == 100 %}full{% elif center_data.capacity_percentage > 80 %}critical{% endif %}" style="width: 0%;" data-width="{{ center_data.capacity_percentage }}"></div>
+                        </div>
+                        <div class="capacity-label">
+                            <span>Capacity: {{ center_data.operator_count }}/{{ center_data.center.count }}</span>
+                            <span>{{ center_data.capacity_percentage }}% Full</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-centers">
+                    <p>No centers found in the system.</p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">NEET</div>
+                <div class="footer-copyright">&copy; 2025 NEET. All rights reserved.</div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const mobileToggle = document.querySelector('.mobile-toggle');
+            const navbarMenu = document.querySelector('.navbar-menu');
+            
+            mobileToggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+                navbarMenu.classList.toggle('active');
+            });
+
+            // Animate capacity bars
+            const capacityBars = document.querySelectorAll('.capacity-bar-fill');
+            if (capacityBars.length > 0) {
+                setTimeout(() => {
+                    capacityBars.forEach(bar => {
+                        const width = bar.getAttribute('data-width');
+                        if (width) {
+                            bar.style.width = width + '%';
+                        }
+                    });
+                }, 300);
+            }
+
+            // Search functionality
+            const searchInput = document.getElementById('centerSearch');
+            const centerCards = document.querySelectorAll('.center-card');
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    
+                    centerCards.forEach(card => {
+                        const centerName = card.getAttribute('data-name');
+                        
+                        if (centerName.includes(searchTerm)) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Sort functionality
+            const sortSelect = document.getElementById('centerSort');
+            const centersList = document.querySelector('.centers-list');
+            
+            if (sortSelect && centersList) {
+                sortSelect.addEventListener('change', function() {
+                    const sortBy = this.value;
+                    const cardsArray = Array.from(centerCards);
+                    
+                    cardsArray.sort((a, b) => {
+                        if (sortBy === 'name') {
+                            return a.getAttribute('data-name').localeCompare(b.getAttribute('data-name'));
+                        } else if (sortBy === 'count') {
+                            return parseInt(b.getAttribute('data-count')) - parseInt(a.getAttribute('data-count'));
+                        } else if (sortBy === 'operator') {
+                            return parseInt(b.getAttribute('data-operator')) - parseInt(a.getAttribute('data-operator'));
+                        }
+                        return 0;
+                    });
+                    
+                    // Clear and append sorted cards
+                    centersList.innerHTML = '';
+                    cardsArray.forEach(card => centersList.appendChild(card));
+                });
+            }
+        });
+    </script>
+</body>
+</html>

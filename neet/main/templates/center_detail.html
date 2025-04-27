@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEET - {{ center.name }} Center Details</title>
+    <link rel="stylesheet" href="{% static 'home/home.css' %}">
+    <link rel="stylesheet" href="{% static 'centers/centers.css' %}">
+    <link rel="stylesheet" href="{% static 'centers/center_detail.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="{% url 'home' %}">NEET</a>
+        </div>
+        <div class="mobile-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="navbar-menu">
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'centers' %}" class="active">Centers</a></li>
+                <li><a href="{% url 'operators' %}">Operators</a></li>
+            </ul>
+        </div>
+        <div class="navbar-user">
+            <a href="#"><i class="fas fa-user"></i></a>
+        </div>
+    </nav>
+
+    <main>
+        <section class="center-detail-section">
+            <div class="container">
+                <!-- Center Header with Key Info -->
+                <div class="center-header">
+                    <div class="center-name">{{ center.name }}</div>
+                    
+                    <!-- Capacity Progress Bar -->
+                    <div class="capacity-bar">
+                        <div class="capacity-bar-fill {% if capacity_percentage == 100 %}full{% elif capacity_percentage > 80 %}critical{% endif %}" style="width: '{{ capacity_percentage }}%';"></div>
+                    </div>
+                    <div class="capacity-label">
+                        <span>Capacity: {{ operator_count }}/{{ center.count }}</span>
+                        <span>{{ capacity_percentage }}% Full</span>
+                    </div>
+                    
+                    <div class="center-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Total Capacity</span>
+                            <span class="meta-value">{{ center.count }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Current Operators</span>
+                            <span class="meta-value">{{ operator_count }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Available Slots</span>
+                            <span class="meta-value">{{ available_slots }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Content Area - 2 Columns -->
+                <div class="detail-section">
+                    <!-- Left Column - Operators List -->
+                    <div class="operators-panel">
+                        <div class="operators-panel-header">
+                            <div>
+                                <h2 class="operators-panel-title">Operators in this Center</h2>
+                                <p class="operators-panel-subtitle">Showing all operators assigned to {{ center.name }}</p>
+                            </div>
+                            {% if available_slots > 0 %}
+                            <button id="addOperatorsBtn" class="action-btn-large primary">
+                                <i class="fas fa-user-plus"></i> Add Operators
+                            </button>
+                            {% endif %}
+                        </div>
+                        
+                        {% if operators %}
+                        <div class="operators-list">
+                            {% for operator in operators %}
+                            <div class="operator-card-small">
+                                <div class="operator-info">
+                                    <div class="operator-name">{{ operator.name }}</div>
+                                    {% if operator.phone %}
+                                    <div class="operator-contact">
+                                        <i class="fas fa-phone"></i> {{ operator.phone }}
+                                    </div>
+                                    {% endif %}
+                                    <div class="operator-incharge">
+                                        <i class="fas fa-user-tie"></i> 
+                                        {% if operator.created_by %}
+                                            {{ operator.created_by.get_full_name|default:operator.created_by.username }}
+                                        {% else %}
+                                            No user assigned
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="operator-actions">
+                                    <button onclick="removeOperator('{{operator.id}}')" class="action-btn" title="View Operator Details">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-users-slash"></i>
+                            <p>No operators assigned to this center yet.</p>
+                            {% if available_slots > 0 %}
+                            <button id="addOperatorsEmptyBtn" class="action-btn-large primary">
+                                <i class="fas fa-user-plus"></i> Add Operators
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Right Column - Additional Info -->
+                    <div class="info-panel">
+                        <div class="info-panel-header">
+                            <h2 class="info-panel-title">Center Information</h2>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Created On</div>
+                            <div class="info-value">April 24, 2025</div>
+                        </div>
+                        
+                        {% if center.map %}
+                        <div class="info-item">
+                            <div class="info-label">Location Details</div>
+                            <div class="map-location">{{ center.map }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Back Button -->
+                <div class="action-buttons" style="margin-top: 3rem;">
+                    <a href="{% url 'centers' %}" class="action-btn-large secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Centers List
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for adding operators -->
+    <div class="modal-container" id="addOperatorsModal">
+        <div class="modal-content">
+            <h2>Add Operators to {{ center.name }}</h2>
+            <form id="addOperatorsForm">
+                {% csrf_token %}
+                <div class="search-field">
+                    <label for="operatorSearch">Search Operators</label>
+                    <div class="search-input">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="operatorSearch" placeholder="Type to search operators...">
+                    </div>
+                </div>
+                
+                <div class="operators-selection">
+                    <div class="selection-header">
+                        <span class="selection-title">All Operators</span>
+                        <div class="selection-filters">
+                            <button type="button" class="filter-btn active" data-filter="all">All</button>
+                            <button type="button" class="filter-btn" data-filter="available">Available Only</button>
+                        </div>
+                        <span class="selection-count"><span id="selectedCount">0</span> selected</span>
+                    </div>
+                    
+                    <div class="operators-checkbox-list" id="operatorsCheckboxList">
+                        {% if all_operators %}
+                            {% for operator in all_operators %}
+                            <div class="operator-checkbox-item" data-name="{{ operator.name|lower }}" data-status="{% if operator.center %}{% if operator.center == center %}current{% else %}assigned{% endif %}{% else %}available{% endif %}">
+                                <label class="checkbox-container{% if operator.center and operator.center != center %} operator-assigned{% endif %}">
+                                    <input type="checkbox" name="operators" value="{{ operator.id }}"
+                                        {% if operator.center and operator.center != center %}disabled="disabled"{% endif %}>
+                                    <span class="checkmark"></span>
+                                    <div class="operator-checkbox-info">
+                                        <span class="operator-checkbox-name">{{ operator.name }}</span>
+                                        <div class="operator-checkbox-details">
+                                            {% if operator.phone %}
+                                            <span class="operator-checkbox-phone">{{ operator.phone }}</span>
+                                            {% endif %}
+                                            {% if operator.center %}
+                                                {% if operator.center == center %}
+                                                <span class="operator-current-center">Already in this center</span>
+                                                {% else %}
+                                                <span class="operator-assigned-center">Assigned to {{ operator.center.name }}</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="operator-unassigned">Available</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-operators-available">
+                                <p>No operators found.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="buttons">
+                    <button type="button" id="cancelAddOperatorsBtn" class="cancel-btn">Cancel</button>
+                    <button type="submit" id="submitAddOperatorsBtn" class="add-btn">
+                        Add Selected Operators
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">NEET</div>
+                <div class="footer-copyright">&copy; 2025 NEET. All rights reserved.</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const mobileToggle = document.querySelector('.mobile-toggle');
+            const navbarMenu = document.querySelector('.navbar-menu');
+            
+            mobileToggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+                navbarMenu.classList.toggle('active');
+            });
+
+            // Animate capacity bar
+            const capacityBar = document.querySelector('.capacity-bar-fill');
+            if (capacityBar) {
+                setTimeout(() => {
+                    capacityBar.style.width = '{{ capacity_percentage }}%';
+                }, 300);
+            }
+            
+            // Modal functionality for adding operators
+            const modal = document.getElementById('addOperatorsModal');
+            const addOperatorsBtn = document.getElementById('addOperatorsBtn');
+            const addOperatorsEmptyBtn = document.getElementById('addOperatorsEmptyBtn');
+            const cancelBtn = document.getElementById('cancelAddOperatorsBtn');
+            const operatorsForm = document.getElementById('addOperatorsForm');
+            const submitBtn = document.getElementById('submitAddOperatorsBtn');
+            
+            // Open modal
+            function openModal() {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            }
+            
+            // Close modal
+            function closeModal() {
+                modal.classList.remove('active');
+                document.body.style.overflow = ''; // Re-enable scrolling
+                document.getElementById('operatorSearch').value = ''; // Clear search
+                // Reset checkboxes
+                const checkboxes = document.querySelectorAll('input[name="operators"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                updateSelectedCount(); // Reset count
+                showAllOperators(); // Reset visibility
+            }
+            
+            // Add click event listeners for opening modal
+            if (addOperatorsBtn) {
+                addOperatorsBtn.addEventListener('click', openModal);
+            }
+            
+            if (addOperatorsEmptyBtn) {
+                addOperatorsEmptyBtn.addEventListener('click', openModal);
+            }
+            
+            // Close modal when clicking cancel button
+            cancelBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                closeModal();
+            });
+            
+            // Close when clicking outside the modal
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            // Close when pressing Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+            
+            // Handle checkbox changes to update selected count
+            function updateSelectedCount() {
+                const checkboxes = document.querySelectorAll('input[name="operators"]:checked');
+                const selectedCount = document.getElementById('selectedCount');
+                selectedCount.textContent = checkboxes.length;
+                
+                // Enable or disable submit button based on selection
+                if (checkboxes.length > 0) {
+                    submitBtn.disabled = false;
+                } else {
+                    submitBtn.disabled = true;
+                }
+            }
+            
+            // Add event listener for all checkboxes
+            const checkboxes = document.querySelectorAll('input[name="operators"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectedCount);
+            });
+            
+            // Initialize selected count
+            updateSelectedCount();
+            
+            // Search functionality in modal
+            const searchInput = document.getElementById('operatorSearch');
+            const operatorItems = document.querySelectorAll('.operator-checkbox-item');
+            
+            function showAllOperators() {
+                operatorItems.forEach(item => {
+                    item.style.display = 'block';
+                });
+            }
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    
+                    operatorItems.forEach(item => {
+                        const operatorName = item.getAttribute('data-name');
+                        
+                        if (operatorName.includes(searchTerm)) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+            
+            // Filter buttons functionality
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    const filterType = this.getAttribute('data-filter');
+                    
+                    // Filter operators based on selected filter
+                    operatorItems.forEach(item => {
+                        if (filterType === 'all') {
+                            item.style.display = 'block';
+                        } else if (filterType === 'available') {
+                            const status = item.getAttribute('data-status');
+                            if (status === 'available') {
+                                item.style.display = 'block';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        }
+                    });
+                    
+                    // Clear search when changing filters
+                    searchInput.value = '';
+                });
+            });
+            
+            // Form submission
+            if (operatorsForm) {
+                operatorsForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Show loading state
+                    const originalBtnText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+                    submitBtn.disabled = true;
+                    
+                    // Get selected operator IDs
+                    const selectedOperators = [];
+                    checkboxes.forEach(checkbox => {
+                        if (checkbox.checked) {
+                            selectedOperators.push(checkbox.value);
+                        }
+                    });
+                    
+                    // Prepare form data
+                    const formData = {
+                        operators: selectedOperators,
+                        center_id: "{{ center.id }}"
+                    };
+                    
+                    // Send AJAX request
+                    fetch('{% url "add_operators_to_center" center_id=center.id %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify(formData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Reset button state
+                        submitBtn.innerHTML = originalBtnText;
+                        submitBtn.disabled = false;
+                        
+                        if (data.success) {
+                            // Show success message
+                            Swal.fire({
+                                title: 'Success!',
+                                text: data.message || 'Operators have been added to the center.',
+                                icon: 'success',
+                                confirmButtonColor: '#4285F4',
+                                confirmButtonText: 'OK'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Reload the page to show updated operators
+                                    window.location.reload();
+                                }
+                            });
+                            
+                            // Close modal
+                            closeModal();
+                        } else {
+                            // Show error message
+                            Swal.fire({
+                                title: 'Error!',
+                                text: data.message || 'Something went wrong. Please try again.',
+                                icon: 'error',
+                                confirmButtonColor: '#ef476f'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        
+                        // Reset button state
+                        submitBtn.innerHTML = originalBtnText;
+                        submitBtn.disabled = false;
+                        
+                        // Show error message
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'There was a problem connecting to the server. Please try again.',
+                            icon: 'error',
+                            confirmButtonColor: '#ef476f'
+                        });
+                    });
+                });
+            }
+        });
+
+        function removeOperator(operatorId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to remove this operator from the center?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#4285F4',
+                cancelButtonColor: '#ef476f',
+                confirmButtonText: 'Yes, remove it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Removing...',
+                        text: 'Please wait while we remove the operator.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    // Send request to the server
+                    fetch(`/api/centers/{{ center.id }}/remove-operator/${operatorId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: data.message || 'Operator has been removed from the center.',
+                                icon: 'success',
+                                confirmButtonColor: '#4285F4'
+                            }).then(() => {
+                                // Reload page to show updated operators list
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: data.message || 'Failed to remove operator.',
+                                icon: 'error',
+                                confirmButtonColor: '#ef476f'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'There was a problem connecting to the server.',
+                            icon: 'error',
+                            confirmButtonColor: '#ef476f'
+                        });
+                    });
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>

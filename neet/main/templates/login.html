@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEET - Login</title>
+    <link rel="stylesheet" href="{% static 'login/login.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Flatpickr for date picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>NEET</h1>
+            <p>Manpower Management Platform</p>
+        </div>
+        
+        <div class="login-form">
+            {% if error %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+            
+            <form action="{% url 'login' %}" method="post">
+                {% csrf_token %}
+                
+                <div class="input-field">
+                    <label for="username">Username</label>
+                    <div class="input-grp">
+                        <input type="text" id="username" name="username" required>
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                
+                <div class="input-field">
+                    <label for="password-date">Password (Select Date)</label>
+                    <div class="input-grp">
+                        <input type="text" id="password-date" placeholder="Select a date..." required>
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <!-- Hidden field for the transformed password -->
+                    <input type="hidden" id="password" name="password">
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    Login <i class="fas fa-sign-in-alt"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize date picker
+            const datePicker = flatpickr("#password-date", {
+                dateFormat: "d-M-Y",
+                disableMobile: true,
+                onChange: function(selectedDates, dateStr) {
+                    if (dateStr) {
+                        // Transform date format from "12-Jan-2025" to "12012025"
+                        const date = selectedDates[0];
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-based
+                        const year = date.getFullYear();
+                        
+                        // Format as DDMMYYYY
+                        const transformedDate = day + month + year;
+                        
+                        // Set the hidden password field
+                        document.getElementById('password').value = transformedDate;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

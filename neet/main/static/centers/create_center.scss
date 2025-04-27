@@ -1,0 +1,174 @@
+// Variables
+$primary-color: #1a3a63; // Deeper blue
+$secondary-color: #4285F4; // Google blue
+$text-color: #fff;
+$hover-color: #ffd166; // Warmer yellow
+$accent-color: #ef476f; // Vibrant pink
+$light-color: #a2d6f9; // Lighter blue
+$shadow-color: rgba(0, 0, 0, 0.1);
+$bg-color: #f7f9fc;
+$success-color: #2ecc71; // Green accent
+$danger-color: #e74c3c; // Red accent
+$border-color: #ddd;
+$input-bg: #fff;
+
+.center-form-container {
+    background: $input-bg;
+    border-radius: .8rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2.5rem;
+
+    .center-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+
+            label {
+                font-weight: 500;
+                color: $primary-color;
+                margin-bottom: 0.3rem;
+                font-size: 1rem;
+
+                .required {
+                    color: $danger-color;
+                }
+            }
+
+            input, textarea {
+                width: 100%;
+                padding: 0.8rem 1rem;
+                border: 1px solid $border-color;
+                border-radius: 0.5rem;
+                font-size: 1rem;
+                font-family: 'Poppins', sans-serif;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                
+                &:focus {
+                    outline: none;
+                    border-color: $secondary-color;
+                    box-shadow: 0 0 0 3px rgba($secondary-color, 0.15);
+                }
+                
+                &.error {
+                    border-color: $danger-color;
+                    box-shadow: 0 0 0 3px rgba($danger-color, 0.15);
+                }
+            }
+
+            textarea {
+                min-height: 100px;
+                resize: vertical;
+            }
+
+            .hint {
+                font-size: 0.8rem;
+                color: #777;
+                margin-top: 0.3rem;
+            }
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 1rem;
+
+            button, a {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.8rem 1.5rem;
+                border-radius: 0.5rem;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                font-size: 1rem;
+                
+                i {
+                    margin-right: 0.6rem;
+                }
+            }
+            
+            .create-btn {
+                background: $secondary-color;
+                color: $text-color;
+                border: none;
+                flex: 2;
+                cursor: pointer;
+                box-shadow: 0 4px 12px rgba($secondary-color, 0.3);
+                
+                &:hover {
+                    background: darken($secondary-color, 10%);
+                    transform: translateY(-3px);
+                    box-shadow: 0 6px 15px rgba($secondary-color, 0.4);
+                }
+            }
+            
+            .cancel-btn {
+                background: #f5f5f5;
+                color: #666;
+                flex: 1;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                
+                &:hover {
+                    background: darken(#f5f5f5, 5%);
+                    transform: translateY(-3px);
+                    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+                }
+            }
+        }
+    }
+}
+
+// Responsive Styles
+@media (max-width: 768px) {
+    .center-form-container {
+        padding: 2rem 1.5rem;
+        
+        .center-form {
+            .form-actions {
+                flex-direction: column;
+                
+                button, a {
+                    width: 100%;
+                }
+                
+                .create-btn {
+                    order: 1;
+                }
+                
+                .cancel-btn {
+                    order: 2;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .center-form-container {
+        padding: 1.5rem 1rem;
+        
+        .center-form {
+            gap: 1.2rem;
+            
+            .form-group {
+                label {
+                    font-size: 0.95rem;
+                }
+                
+                input, textarea {
+                    padding: 0.7rem 0.9rem;
+                    font-size: 0.95rem;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,578 @@
+<!-- filepath: d:\PROGRAMMING\NEET\neet\main\templates\operators.html -->
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEET - Operators Management</title>
+    <link rel="stylesheet" href="{% static 'home/home.css' %}">
+    <link rel="stylesheet" href="{% static 'operators/operators.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="{% url 'home' %}">NEET</a>
+        </div>
+        <div class="mobile-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="navbar-menu">
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'centers' %}">Centers</a></li>
+                <li><a href="{% url 'operators' %}" class="active">Operators</a></li>
+            </ul>
+        </div>
+        <div class="navbar-user">
+            <a href="#"><i class="fas fa-user"></i></a>
+        </div>
+    </nav>
+
+    <main>
+        <section class="operators-section">
+            <div class="container">
+                <div class="section-header">
+                    <h1 class="operators-title">Operators</h1>
+                    <p class="section-subtitle">Manage all operators in one place</p>
+                </div>
+                
+                <div class="operators-controls">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="operatorSearch" placeholder="Search operators...">
+                    </div>
+                    <div class="filter-sort">
+                        <select id="operatorSort">
+                            <option value="name">Sort by Name</option>
+                            <option value="center">Sort by Center</option>
+                            <option value="created_by">Sort by Creator</option>
+                        </select>
+                    </div>
+                    <button class="add-operator-btn">
+                        <i class="fas fa-plus"></i> Add Operator
+                    </button>
+                </div>
+                
+                {% if operators %}
+                <div class="operators-list">
+                    {% for operator in operators %}
+                    <div class="operator-card" data-name="{{ operator.name|lower }}" data-center="{{ operator.center.name|lower }}" data-created-by="{% if operator.created_by %}{{ operator.created_by.username|lower }}{% endif %}" data-id="{{ operator.id }}">
+                        <div class="operator-info">
+                            <h3>{{ operator.name }}</h3>
+                            <p class="operator-center">
+                                <i class="fas fa-building"></i> {{ operator.center.name }}
+                            </p>
+                        </div>
+                        <div class="operator-contact">
+                            {% if operator.phone %}
+                            <a href="tel:{{ operator.phone }}" class="phone-link">
+                                <i class="fas fa-phone"></i> {{ operator.phone }}
+                            </a>
+                            {% endif %}
+                        </div>
+                        <div class="operator-incharge">
+                            <span class="incharge-label">Created by:</span>
+                            <span class="incharge-name">{% if operator.created_by %}{{ operator.created_by.get_full_name|default:operator.created_by.username }}{% else %}Not assigned{% endif %}</span>
+                        </div>
+                        <div class="operator-actions">
+                            <a href="#" class="edit-btn" title="Edit Operator">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="delete-btn" title="Delete Operator">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-operators">
+                    <p>No operators found in the system.</p>
+                    <a href="#" class="operator-btn add-operator-btn">
+                        <i class="fas fa-plus"></i> Add an Operator
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">NEET</div>
+                <div class="footer-copyright">&copy; 2025 NEET. All rights reserved.</div>
+            </div>
+        </div>
+    </footer>
+
+    <div class="modal-container">
+        <div class="modal-content">
+            <h2 id="modalTitle">Add Operator</h2>
+           <form id="addOperatorForm">
+            {% csrf_token %}
+            <input type="hidden" id="operatorId" value="">
+            <div class="input-field">
+                <label for="opname">Name</label>
+                <input type="text" name="name" id="opname" required>
+            </div>
+
+            <div class="input-field">
+                <label for="opphone">Phone</label>
+                <div class="input-grp">
+                    <span>+91</span>
+                    <input type="tel" name="phone" minlength="10" maxlength="10" id="opphone">
+                </div>
+            </div>
+
+            <div class="input-field">
+                <label for="opcenter">Center <small>(optional)</small></label>
+                <select name="center" id="opcenter">
+                    <option value="">Select a center</option>
+                    {% for center in centers %}
+                    <option value="{{center.id}}">{{center.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="buttons">
+                <button type="button" id="cancelOperatorBtn">Cancel</button>
+                <button type="submit" id="submitOperatorBtn">Submit</button>
+            </div>
+
+           </form>
+        </div>
+    </div>
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const mobileToggle = document.querySelector('.mobile-toggle');
+            const navbarMenu = document.querySelector('.navbar-menu');
+            
+            mobileToggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+                navbarMenu.classList.toggle('active');
+            });
+
+            // Search functionality
+            const searchInput = document.getElementById('operatorSearch');
+            const operatorCards = document.querySelectorAll('.operator-card');
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    
+                    operatorCards.forEach(card => {
+                        const operatorName = card.getAttribute('data-name');
+                        const operatorCenter = card.getAttribute('data-center');
+                        const operatorCreator = card.getAttribute('data-created-by') || '';
+                        
+                        if (operatorName.includes(searchTerm) || 
+                            operatorCenter.includes(searchTerm) || 
+                            operatorCreator.includes(searchTerm)) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Sort functionality
+            const sortSelect = document.getElementById('operatorSort');
+            const operatorsList = document.querySelector('.operators-list');
+            
+            if (sortSelect && operatorsList) {
+                sortSelect.addEventListener('change', function() {
+                    const sortBy = this.value;
+                    const cardsArray = Array.from(operatorCards);
+                    
+                    cardsArray.sort((a, b) => {
+                        if (sortBy === 'name') {
+                            return a.getAttribute('data-name').localeCompare(b.getAttribute('data-name'));
+                        } else if (sortBy === 'center') {
+                            return a.getAttribute('data-center').localeCompare(b.getAttribute('data-center'));
+                        } else if (sortBy === 'created_by') {
+                            return (a.getAttribute('data-created-by') || '').localeCompare(b.getAttribute('data-created-by') || '');
+                        }
+                        return 0;
+                    });
+                    
+                    // Clear and append sorted cards
+                    operatorsList.innerHTML = '';
+                    cardsArray.forEach(card => operatorsList.appendChild(card));
+                });
+            }
+            
+            // Modal functionality
+            const modal = document.querySelector('.modal-container');
+            const addOperatorBtns = document.querySelectorAll('.add-operator-btn');
+            const cancelBtn = document.getElementById('cancelOperatorBtn');
+            const operatorForm = document.getElementById('addOperatorForm');
+            const modalTitle = document.getElementById('modalTitle');
+            const submitBtn = document.getElementById('submitOperatorBtn');
+            let isEditMode = false;
+            
+            // Open modal for adding new operator
+            addOperatorBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    isEditMode = false;
+                    modalTitle.textContent = 'Add Operator';
+                    submitBtn.textContent = 'Submit';
+                    // Reset form and hidden ID field
+                    operatorForm.reset();
+                    document.getElementById('operatorId').value = '';
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden'; // Prevent scrolling
+                });
+            });
+            
+            // Close modal
+            function closeModal() {
+                modal.classList.remove('active');
+                document.body.style.overflow = ''; // Re-enable scrolling
+                operatorForm.reset(); // Reset form when closing
+                document.getElementById('operatorId').value = '';
+            }
+            
+            // Close when clicking cancel button
+            cancelBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                closeModal();
+            });
+            
+            // Close when clicking outside the modal
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            // Close when pressing Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+            
+            // Delete operator functionality
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.delete-btn')) {
+                    e.preventDefault();
+                    const deleteBtn = e.target.closest('.delete-btn');
+                    const operatorCard = deleteBtn.closest('.operator-card');
+                    const operatorName = operatorCard.querySelector('.operator-info h3').textContent;
+                    const operatorId = operatorCard.getAttribute('data-id');
+                    
+                    // Show confirmation dialog
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: `You are about to delete operator "${operatorName}". This action cannot be undone!`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#e74c3c',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Yes, delete it!',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Send delete request
+                            fetch(`{% url 'delete_operator' operator_id=0 %}`.replace('0', operatorId), {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Remove operator card from DOM
+                                    operatorCard.remove();
+                                    
+                                    // Show success message
+                                    Swal.fire({
+                                        title: 'Deleted!',
+                                        text: data.message || 'Operator has been deleted.',
+                                        icon: 'success',
+                                        confirmButtonColor: '#4285F4',
+                                        timer: 3000
+                                    });
+                                    
+                                    // If no operators left, show the no operators div
+                                    const operatorsList = document.querySelector('.operators-list');
+                                    if (operatorsList && !operatorsList.children.length) {
+                                        const container = document.querySelector('.operators-section .container');
+                                        operatorsList.remove();
+                                        
+                                        const noOperatorsDiv = document.createElement('div');
+                                        noOperatorsDiv.classList.add('no-operators');
+                                        noOperatorsDiv.innerHTML = `
+                                            <p>No operators found in the system.</p>
+                                            <a href="#" class="operator-btn add-operator-btn">
+                                                <i class="fas fa-plus"></i> Add an Operator
+                                            </a>
+                                        `;
+                                        container.appendChild(noOperatorsDiv);
+                                        
+                                        // Re-attach event listener to the new add button
+                                        const newAddBtn = noOperatorsDiv.querySelector('.add-operator-btn');
+                                        newAddBtn.addEventListener('click', function(e) {
+                                            e.preventDefault();
+                                            isEditMode = false;
+                                            modalTitle.textContent = 'Add Operator';
+                                            submitBtn.textContent = 'Submit';
+                                            operatorForm.reset();
+                                            document.getElementById('operatorId').value = '';
+                                            modal.classList.add('active');
+                                            document.body.style.overflow = 'hidden';
+                                        });
+                                    }
+                                } else {
+                                    // Show error message
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: data.message || 'Failed to delete operator.',
+                                        icon: 'error',
+                                        confirmButtonColor: '#ef476f'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'There was a problem connecting to the server.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#ef476f'
+                                });
+                            });
+                        }
+                    });
+                }
+                
+                // Edit operator functionality
+                if (e.target.closest('.edit-btn')) {
+                    e.preventDefault();
+                    const editBtn = e.target.closest('.edit-btn');
+                    const operatorCard = editBtn.closest('.operator-card');
+                    const operatorId = operatorCard.getAttribute('data-id');
+                    const operatorName = operatorCard.querySelector('.operator-info h3').textContent;
+                    
+                    // Get phone number if exists (without the +91 part)
+                    let operatorPhone = '';
+                    const phoneLink = operatorCard.querySelector('.phone-link');
+                    if (phoneLink) {
+                        operatorPhone = phoneLink.textContent.trim().replace(/\+91\s*/, '').trim();
+                    }
+                    
+                    // Get center ID if exists
+                    const centerSelect = document.getElementById('opcenter');
+                    const centerName = operatorCard.querySelector('.operator-center').textContent.trim().replace(/\s*No center assigned\s*/, '');
+                    let centerId = '';
+                    
+                    // Look through options to find matching center name
+                    Array.from(centerSelect.options).forEach(option => {
+                        if (option.text.trim() === centerName.trim()) {
+                            centerId = option.value;
+                        }
+                    });
+                    
+                    // Set form to edit mode
+                    isEditMode = true;
+                    modalTitle.textContent = 'Edit Operator';
+                    submitBtn.textContent = 'Update';
+                    
+                    // Populate form fields
+                    document.getElementById('operatorId').value = operatorId;
+                    document.getElementById('opname').value = operatorName;
+                    document.getElementById('opphone').value = operatorPhone;
+                    document.getElementById('opcenter').value = centerId;
+                    
+                    // Show modal
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+            
+            // Function to create an operator card
+            function createOperatorCard(operator) {
+                const operatorCard = document.createElement('div');
+                operatorCard.classList.add('operator-card');
+                operatorCard.setAttribute('data-name', operator.name.toLowerCase());
+                operatorCard.setAttribute('data-center', operator.center ? operator.center.name.toLowerCase() : '');
+                operatorCard.setAttribute('data-created-by', operator.created_by.toLowerCase());
+                operatorCard.setAttribute('data-id', operator.id);
+                
+                operatorCard.innerHTML = `
+                    <div class="operator-info">
+                        <h3>${operator.name}</h3>
+                        ${operator.center ? `
+                        <p class="operator-center">
+                            <i class="fas fa-building"></i> ${operator.center.name}
+                        </p>
+                        ` : `
+                        <p class="operator-center operator-no-center">
+                            <i class="fas fa-building"></i> No center assigned
+                        </p>
+                        `}
+                    </div>
+                    <div class="operator-contact">
+                        ${operator.phone ? `
+                        <a href="tel:${operator.phone}" class="phone-link">
+                            <i class="fas fa-phone"></i> ${operator.phone}
+                        </a>
+                        ` : ''}
+                    </div>
+                    <div class="operator-incharge">
+                        <span class="incharge-label">Created by:</span>
+                        <span class="incharge-name">${operator.created_by}</span>
+                    </div>
+                    <div class="operator-actions">
+                        <a href="#" class="edit-btn" title="Edit Operator">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="#" class="delete-btn" title="Delete Operator">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                `;
+                
+                return operatorCard;
+            }
+            
+            // Handle form submission with AJAX
+            operatorForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Show loading state
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (isEditMode ? 'Updating...' : 'Submitting...');
+                submitBtn.disabled = true;
+                
+                // Get form data
+                const formData = {
+                    name: document.getElementById('opname').value,
+                    phone: document.getElementById('opphone').value,
+                    center: document.getElementById('opcenter').value
+                };
+                
+                // Get operator ID if in edit mode
+                const operatorId = document.getElementById('operatorId').value;
+                
+                // Determine endpoint and method based on mode
+                const url = isEditMode 
+                    ? `{% url 'update_operator' operator_id=0 %}`.replace('0', operatorId)
+                    : '{% url "create_operator" %}';
+                const method = isEditMode ? 'PUT' : 'POST';
+                
+                // Send AJAX request
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Reset button state
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                    
+                    if (data.success) {
+                        // Show success message
+                        Swal.fire({
+                            title: isEditMode ? 'Updated!' : 'Success!',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonColor: '#4285F4',
+                            timer: 3000
+                        });
+                        
+                        // Close modal
+                        closeModal();
+                        
+                        if (isEditMode) {
+                            // Find and update the existing card
+                            const existingCard = document.querySelector(`.operator-card[data-id="${operatorId}"]`);
+                            if (existingCard) {
+                                const newCard = createOperatorCard(data.operator);
+                                existingCard.replaceWith(newCard);
+                            }
+                        } else {
+                            // Check if we have no operators div
+                            const noOperatorsDiv = document.querySelector('.no-operators');
+                            if (noOperatorsDiv) {
+                                // Remove the no operators message and create operators list
+                                const container = document.querySelector('.operators-section .container');
+                                noOperatorsDiv.remove();
+                                
+                                const operatorsList = document.createElement('div');
+                                operatorsList.classList.add('operators-list');
+                                container.appendChild(operatorsList);
+                            }
+                            
+                            // Add new operator to the list
+                            const operatorsList = document.querySelector('.operators-list');
+                            const newOperatorCard = createOperatorCard({
+                                id: data.operator.id,
+                                name: data.operator.name,
+                                phone: data.operator.phone,
+                                center: data.operator.center,
+                                created_by: data.operator.created_by
+                            });
+                            
+                            operatorsList.appendChild(newOperatorCard);
+                        }
+                        
+                        // Apply sort if needed
+                        if (sortSelect) {
+                            const event = new Event('change');
+                            sortSelect.dispatchEvent(event);
+                        }
+                    } else {
+                        // Show error message
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message || 'Something went wrong. Please try again.',
+                            icon: 'error',
+                            confirmButtonColor: '#ef476f'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    
+                    // Reset button state
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                    
+                    // Show error message
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'There was a problem connecting to the server. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#ef476f'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

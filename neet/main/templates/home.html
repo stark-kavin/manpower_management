@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEET - Education Management Platform</title>
+    <link rel="stylesheet" href="{% static 'home/home.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="{% url 'home' %}">NEET</a>
+        </div>
+        <div class="mobile-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="navbar-menu">
+            <ul>
+                <li><a href="{% url 'home' %}" class="active">Home</a></li>
+                <li><a href="{% url 'centers' %}">Centers</a></li>
+                <li><a href="{% url 'operators' %}">Operators</a></li>
+            </ul>
+        </div>
+        <div class="navbar-user">
+            <a href="#"><i class="fas fa-user"></i></a>
+        </div>
+    </nav>
+
+    <main>
+        <section class="dashboard-header">
+            <div class="container">
+                <h1>Hello, <b>{{user}}</b>!</h1>
+                <p>Welcome to your centralized operator management platform</p>
+            </div>
+        </section>
+        
+        <section class="stat-cards">
+            <div class="container">
+                <div class="section-title">
+                    <h2>System Overview</h2>
+                    <p>Key metrics and statistics</p>
+                </div>
+                <div class="card-wrapper">
+                    <div class="stat-card">
+                        <div class="card-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="card-content">
+                            <h2 class="card-count">{{ centers_count }}</h2>
+                            <p class="card-title">Centers</p>
+                        </div>
+                        <div class="card-action">
+                            <a href="{% url 'centers' %}">View All <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="card-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="card-content">
+                            <h2 class="card-count">{{ operators_count }}</h2>
+                            <p class="card-title">Operators</p>
+                        </div>
+                        <div class="card-action">
+                            <a href="{% url 'operators' %}">View All <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="card-icon">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <div class="card-content">
+                            <h2 class="card-count">{{ creators_count }}</h2>
+                            <p class="card-title">Creators</p>
+                        </div>
+                        <div class="card-action">
+                            <a href="#">View All <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">NEET</div>
+                <div class="footer-copyright">&copy; 2025 NEET. All rights reserved.</div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const mobileToggle = document.querySelector('.mobile-toggle');
+            const navbarMenu = document.querySelector('.navbar-menu');
+            
+            mobileToggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+                navbarMenu.classList.toggle('active');
+            });
+            
+            // Add animation to stat cards
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('animate');
+                }, 100 * index);
+            });
+        });
+    </script>
+</body>
+</html>
